@@ -24,23 +24,23 @@ namespace Dungeon.Generator
         /// <summary>
         /// A <see cref="Tile"/> with a floor <see cref="MaterialType"/> 
         /// </summary>
-        public static readonly Tile Floor = new Tile {MaterialType = MaterialType.Floor};
+        public static readonly Tile Floor = new Tile { MaterialType = MaterialType.Floor };
 
         /// <summary>
         /// A <see cref="Tile"/> with a Wall <see cref="MaterialType"/> 
         /// </summary>
-        public static readonly Tile Wall = new Tile {MaterialType = MaterialType.Wall};
+        public static readonly Tile Wall = new Tile { MaterialType = MaterialType.Wall };
 
         /// <summary>
         /// A <see cref="Tile"/> with an Air <see cref="MaterialType"/> 
         /// </summary>
-        public static readonly Tile Air = new Tile {MaterialType = MaterialType.Air};
+        public static readonly Tile Air = new Tile { MaterialType = MaterialType.Air };
     }
 
     /// <summary>
     /// The material of the tile
     /// </summary>
-    public enum MaterialType : byte
+    public enum MaterialType
     {
         /// <summary>
         /// Nothing
@@ -64,7 +64,7 @@ namespace Dungeon.Generator
     /// Tile meta data
     /// </summary>
     [Flags]
-    public enum AttributeType : byte
+    public enum AttributeType
     {
         /// <summary>
         /// Nothing

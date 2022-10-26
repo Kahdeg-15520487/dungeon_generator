@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
+
 using Dungeon.Generator;
 
 namespace Demo
@@ -18,21 +20,22 @@ namespace Demo
             var width = map.Width;
             var height = map.Height;
 
-            var winWidth = Math.Min(width + 7, 132);
-            var winHeight = Math.Min(height + 17, 132);
+            //var winWidth = Math.Min(width + 7, 132);
+            //var winHeight = Math.Min(height + 17, 132);
 
-            try
-            {
-
-                Console.SetWindowSize(winWidth, winHeight);
-                Console.SetBufferSize(width + 7, height + 17);
-            }
-            catch
-            {
-                Debug.Fail("Set console font size to a mono spaced font.");
-                Console.SetBufferSize(width + 7, height + 17);
-                Console.SetWindowSize(winWidth, winHeight);
-            }
+            //try
+            //{
+            //    Console.SetWindowSize(winWidth, winHeight);
+            //    Console.SetBufferSize(width + 7, height + 17);
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine(Console.LargestWindowHeight);
+            //    Console.WriteLine(Console.LargestWindowWidth);
+            //    Debug.Fail("Set console font size to a mono spaced font." + ex.Message);
+            //    Console.SetBufferSize(width + 7, height + 17);
+            //    Console.SetWindowSize(winWidth, winHeight);
+            //}
 
 
             for (var x = 0; x < width; x++)
@@ -87,7 +90,7 @@ namespace Demo
                     {
                         Console.ForegroundColor = ConsoleColor.DarkRed;
                         output = 'M';
-                        
+
                     }
                     else if (tile.Attributes.HasFlag(AttributeType.Doors))
                     {
@@ -106,14 +109,14 @@ namespace Demo
             Console.WriteLine("Width: {0} Height: {1}", width, height);
             Console.WriteLine();
             Console.WriteLine(Enumerable.Repeat('\u2500', width + 7).ToArray());
-            
+
         }
 
         public bool PromptForInt(string message, out uint seedValue)
         {
             bool valid;
             uint result = 0;
-            var startPos = new Point {X = Console.CursorLeft, Y = Console.CursorTop};
+            var startPos = new Point { X = Console.CursorLeft, Y = Console.CursorTop };
 
             Console.CursorVisible = true;
             var value = "";
@@ -126,7 +129,7 @@ namespace Demo
                 Console.SetCursorPosition(startPos.X, startPos.Y);
                 Console.Write(message);
 
-                 value = Console.ReadLine();
+                value = Console.ReadLine();
                 valid = (value.Equals("q") || value.Equals("cancel") || value.Equals("quit")) || uint.TryParse(value, out result);
                 seedValue = result;
 
@@ -139,13 +142,14 @@ namespace Demo
         public void ShowInstructions(uint Seed, MapSize size)
         {
 
-                Console.WriteLine("Seed: {0}", Seed);
-                Console.WriteLine("Size: {0}", size);
-                Console.WriteLine("Press 'q' to quit");
-                Console.WriteLine("Press 'enter' to see a new dungeon");
-                Console.WriteLine("Press 'w' to increase dungeon size");
-                Console.WriteLine("Press 's' to decrease dungeon size");
-                Console.WriteLine("Press 'c' to change the seed");
+            Console.WriteLine("Seed: {0}", Seed);
+            Console.WriteLine("Size: {0}", size);
+            Console.WriteLine("Press 'q' to quit");
+            Console.WriteLine("Press 'enter' to see a new dungeon");
+            Console.WriteLine("Press 'w' to increase dungeon size");
+            Console.WriteLine("Press 's' to decrease dungeon size");
+            Console.WriteLine("Press 'c' to change the seed");
+            Console.WriteLine("Press 'p' to export current dungeon");
 
         }
     }
