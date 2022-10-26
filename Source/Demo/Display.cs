@@ -37,7 +37,6 @@ namespace Demo
             //    Console.SetWindowSize(winWidth, winHeight);
             //}
 
-
             for (var x = 0; x < width; x++)
             {
                 for (var y = 0; y < height; y++)

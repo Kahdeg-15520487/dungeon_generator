@@ -5,6 +5,8 @@
     /// </summary>
     public static class Generator
     {
+        public static CellBasedGenerator cbg;
+
         /// <summary>
         /// Generates a dungeon
         /// </summary>
@@ -13,8 +15,9 @@
         /// <returns>An <see cref="ITileMap"/>, a 2D array of tile information</returns>
         public static ITileMap Generate(MapSize size, GeneratorParams parameters)
         {
-            var map = new TileMap((int) size, (int) size);
-            new CellBasedGenerator(parameters).Generate(map);
+            var map = new TileMap((int)size, (int)size);
+            cbg = new CellBasedGenerator(parameters);
+            cbg.Generate(map);
             return map;
         }
 
@@ -26,12 +29,13 @@
         /// <returns>An <see cref="ITileMap"/>, a 2D array of tile information</returns>
         public static ITileMap Generate(MapSize size, uint seed)
         {
-            var map = new TileMap((int) size, (int) size);
+            var map = new TileMap((int)size, (int)size);
 
             var parameters = GeneratorParams.Default;
             parameters.Seed = seed;
 
-            new CellBasedGenerator(parameters).Generate(map);
+            cbg = new CellBasedGenerator(parameters);
+            cbg.Generate(map);
 
             return map;
         }

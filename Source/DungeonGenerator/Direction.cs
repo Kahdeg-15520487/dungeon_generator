@@ -8,7 +8,7 @@ namespace Dungeon.Generator
     /// Direction flags. Laid out so that a right turn is the same as going up one flag
     /// </summary>
     [Flags]
-    internal enum Direction : byte
+    public enum Direction : byte
     {
         None = 0,
         North = 0x01,

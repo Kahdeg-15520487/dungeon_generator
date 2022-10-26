@@ -16,6 +16,7 @@ namespace Demo
         private static int selectedSize;
         private static uint Seed = 1032u;
         private static ITileMap dungeon;
+        private static Cell[,] cells;
         private static bool running;
 
         private static readonly Display display = new Display();
@@ -54,7 +55,12 @@ namespace Demo
         private static void Generate()
         {
             var size = sizes[selectedSize];
-            dungeon = Generator.Generate(size, Seed);
+            GeneratorParams gp = GeneratorParams.Default;
+            gp.RoomChance = 1f;
+            gp.Seed = Seed;
+            gp.MobsInRoomsOnly = true;
+            dungeon = Generator.Generate(size, gp);
+            cells = Generator.cbg._cells;
         }
 
         private static void Quit()
@@ -82,17 +88,30 @@ namespace Demo
 
         static void Export()
         {
-            List<List<Cell>> cells = new List<List<Cell>>();
+            List<List<ExportTile>> tiles = new List<List<ExportTile>>();
             for (int y = 0; y < dungeon.Height; y++)
             {
-                var row = new List<Cell>();
+                var row = new List<ExportTile>();
                 for (int x = 0; x < dungeon.Width; x++)
                 {
-                    row.Add(new Cell(dungeon[x, y]));
+                    row.Add(new ExportTile(dungeon[x, y]));
                 }
-                cells.Add(row);
+                tiles.Add(row);
             }
-            File.WriteAllText($"map_{Seed}.json", JsonConvert.SerializeObject(cells, Formatting.Indented));
+            File.WriteAllText($"map_{Seed}.json", JsonConvert.SerializeObject(tiles, Formatting.Indented));
+
+
+            List<List<ExportCell>> cs = new List<List<ExportCell>>();
+            for (int y = 0; y < dungeon.Height / CellBasedGenerator.CellSize; y++)
+            {
+                var row = new List<ExportCell>();
+                for (int x = 0; x < dungeon.Width / CellBasedGenerator.CellSize; x++)
+                {
+                    row.Add(new ExportCell(cells[x, y]));
+                }
+                cs.Add(row);
+            }
+            File.WriteAllText($"cell_{Seed}.json", JsonConvert.SerializeObject(cs, Formatting.Indented));
         }
 
         static void Render1()
@@ -102,10 +121,10 @@ namespace Demo
 
         static void Render2()
         {
-            List<List<Cell>> cells = new List<List<Cell>>();
+            List<List<ExportTile>> cells = new List<List<ExportTile>>();
             for (int y = 0; y < dungeon.Height; y++)
             {
-                var roomCells = new List<Cell>();
+                var roomCells = new List<ExportTile>();
                 for (int x = 0; x < dungeon.Width; x++)
                 {
                     //row.Add(new Cell(dungeon[x, y]));
@@ -127,9 +146,9 @@ namespace Demo
         }
     }
 
-    public class Cell
+    public class ExportTile
     {
-        public Cell(Tile tile)
+        public ExportTile(Tile tile)
         {
             MaterialType = tile.MaterialType;
             AttributeType = tile.Attributes;
@@ -139,5 +158,22 @@ namespace Demo
         public MaterialType MaterialType { get; set; }
         [JsonConverter(typeof(StringEnumConverter))]
         public AttributeType AttributeType { get; set; }
+    }
+
+    public class ExportCell
+    {
+        public ExportCell(Cell cell)
+        {
+            this.CellType = cell.Type;
+            this.CellAttributes = cell.Attributes;
+            this.CellOpenings = cell.Openings;
+        }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public CellType CellType { get; private set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public AttributeType CellAttributes { get; private set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public Direction CellOpenings { get; private set; }
     }
 }

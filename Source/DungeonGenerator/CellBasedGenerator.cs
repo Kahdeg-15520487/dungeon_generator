@@ -5,13 +5,13 @@ using System.Runtime.InteropServices;
 
 namespace Dungeon.Generator
 {
-    internal class CellBasedGenerator
+    public class CellBasedGenerator
     {
         private readonly GeneratorParams _params;
         public const int CellSize = 9;
 
         private MersennePrimeRandom _random;
-        private Cell[,] _cells;
+        public Cell[,] _cells;
 
         public CellBasedGenerator() : this(GeneratorParams.Default) { }
         public CellBasedGenerator(GeneratorParams @params) { _params = @params; }
@@ -20,15 +20,15 @@ namespace Dungeon.Generator
         {
             _random = new MersennePrimeRandom(_params.Seed);
 
-            var w = map.Width/CellSize;
-            var h = map.Height/CellSize;
+            var w = map.Width / CellSize;
+            var h = map.Height / CellSize;
 
-            _cells = new Cell[w,h];
+            _cells = new Cell[w, h];
 
-            var startLoc = new Point { X = w/2, Y = h/2 };
+            var startLoc = new Point { X = w / 2, Y = h / 2 };
             _cells[startLoc.X, startLoc.Y] = Cell.FourWayRoom();
 
-            if(_params.Exits)
+            if (_params.Exits)
                 _cells[startLoc.X, startLoc.Y].Attributes = AttributeType.Entry;
 
             var unprocessed = new Queue<Point>();
@@ -39,7 +39,7 @@ namespace Dungeon.Generator
                 var location = unprocessed.Dequeue();
                 var cell = _cells[location.X, location.Y];
 
-                foreach(var opening in cell.Openings.ToDirectionsArray())
+                foreach (var opening in cell.Openings.ToDirectionsArray())
                 {
                     var newLocation = opening.GetLocation(location);
                     var newCell = DetermineCellType(newLocation, opening);
@@ -63,7 +63,7 @@ namespace Dungeon.Generator
                     if (!secondExitPlaced)
                     {
                         var spawnExit = _random.Chance(chance);
-                        if (cell.Type != CellType.None && ((x <= w*0.15) || (x >= w*0.65)) && spawnExit)
+                        if (cell.Type == CellType.Room && ((x <= w * 0.15) || (x >= w * 0.65)) && spawnExit)
                         {
                             cell.Attributes = AttributeType.Exit;
                             secondExitPlaced = true;
@@ -76,6 +76,60 @@ namespace Dungeon.Generator
                 }
         }
 
+        public void Generate(int width, int height)
+        {
+            _random = new MersennePrimeRandom(_params.Seed);
+
+            _cells = new Cell[width, height];
+
+            var startLoc = new Point { X = width / 2, Y = height / 2 };
+            _cells[startLoc.X, startLoc.Y] = Cell.FourWayRoom();
+
+            if (_params.Exits)
+                _cells[startLoc.X, startLoc.Y].Attributes = AttributeType.Entry;
+
+            var unprocessed = new Queue<Point>();
+            unprocessed.Enqueue(startLoc);
+
+            while (unprocessed.Count > 0)
+            {
+                var location = unprocessed.Dequeue();
+                var cell = _cells[location.X, location.Y];
+
+                foreach (var opening in cell.Openings.ToDirectionsArray())
+                {
+                    var newLocation = opening.GetLocation(location);
+                    var newCell = DetermineCellType(newLocation, opening);
+
+                    if (newCell.Type != CellType.None)
+                    {
+                        _cells[newLocation.X, newLocation.Y] = ApplyAttributes(newCell);
+                        unprocessed.Enqueue(newLocation);
+                    }
+                }
+            }
+
+            var secondExitPlaced = !_params.Exits;
+
+            var chance = 10;
+            for (var x = 0; x < _cells.GetLength(0); x++)
+                for (var y = 0; y < _cells.GetLength(1); y++)
+                {
+                    var cell = _cells[x, y];
+
+                    if (!secondExitPlaced)
+                    {
+                        var spawnExit = _random.Chance(chance);
+                        if (cell.Type == CellType.Room && ((x <= width * 0.15) || (x >= width * 0.65)) && spawnExit)
+                        {
+                            cell.Attributes = AttributeType.Exit;
+                            secondExitPlaced = true;
+                        }
+                        else if (!spawnExit)
+                            chance += (int)(chance * 0.25f);
+                    }
+                }
+        }
 
         private Cell ApplyAttributes(Cell newCell)
         {
@@ -121,7 +175,7 @@ namespace Dungeon.Generator
                 {
                     var cell = _cells[newLoc.X, newLoc.Y];
 
-                    if(cell.Type == CellType.None || cell.Openings.Facing(dir))
+                    if (cell.Type == CellType.None || cell.Openings.Facing(dir))
                         list.Add(dir);
                 }
 
@@ -130,7 +184,7 @@ namespace Dungeon.Generator
 
 
             var connectsToMake = list.Count > 0 ? _random.Next(1, list.Count + 1) : 0;
-            var validConnections =  list.Take(connectsToMake).Concat(new []{ startDir.TurnAround() }).ToArray();
+            var validConnections = list.Take(connectsToMake).Concat(new[] { startDir.TurnAround() }).ToArray();
 
             // close the openings in the neighbor cells that we didn't make
             foreach (var connectToUndo in list.Skip(connectsToMake))

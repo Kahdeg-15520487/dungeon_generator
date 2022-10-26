@@ -5,7 +5,7 @@ namespace Dungeon.Generator
 {
     [DebuggerDisplay("{Type} Cell Exits {Openings}")]
     [StructLayout(LayoutKind.Explicit)]
-    internal struct Cell
+    public struct Cell
     {
         [FieldOffset(0)]
         public Direction Openings;
