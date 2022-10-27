@@ -7,7 +7,6 @@ using System.Threading;
 using Dungeon.Generator;
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -64,7 +63,7 @@ namespace Demo
         {
             var size = sizes[selectedSize];
             GeneratorParams gp = GeneratorParams.Default;
-            gp.RoomChance = 1f;
+            gp.RoomChance = 0.8f;
             gp.Seed = Seed;
             gp.MobsInRoomsOnly = true;
             dungeon = CellBasedGeneratorCaller.Generate((int)size, gp);
@@ -199,10 +198,6 @@ namespace Demo
                         {
                             image[x * 16 + i, y * 16 + j] = template[i, j];
                         }
-                        else
-                        {
-                            image[x * 16 + i, y * 16 + j] = template[i, j];
-                        }
                     }
                 }
             }
@@ -220,36 +215,5 @@ namespace Demo
         {
             Console.Clear();
         }
-    }
-
-    public class ExportTile
-    {
-        public ExportTile(Tile tile)
-        {
-            MaterialType = tile.MaterialType;
-            AttributeType = tile.Attributes;
-        }
-
-        [JsonConverter(typeof(StringEnumConverter))]
-        public MaterialType MaterialType { get; set; }
-        [JsonConverter(typeof(StringEnumConverter))]
-        public AttributeType AttributeType { get; set; }
-    }
-
-    public class ExportCell
-    {
-        public ExportCell(Cell cell)
-        {
-            this.CellType = cell.Type;
-            this.CellAttributes = cell.Attributes;
-            this.CellOpenings = cell.Openings;
-        }
-
-        [JsonConverter(typeof(StringEnumConverter))]
-        public CellType CellType { get; private set; }
-        [JsonConverter(typeof(StringEnumConverter))]
-        public AttributeType CellAttributes { get; private set; }
-        [JsonConverter(typeof(StringEnumConverter))]
-        public Direction CellOpenings { get; private set; }
     }
 }
