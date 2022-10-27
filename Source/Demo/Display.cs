@@ -138,7 +138,7 @@ namespace Demo
             return true;
         }
 
-        public void ShowInstructions(uint Seed, MapSize size)
+        public void ShowInstructions(uint Seed, TileMapSize size)
         {
 
             Console.WriteLine("Seed: {0}", Seed);

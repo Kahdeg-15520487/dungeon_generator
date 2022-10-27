@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
@@ -8,11 +9,14 @@ using Dungeon.Generator;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+
 namespace Demo
 {
     public class Program
     {
-        private static readonly MapSize[] sizes = Enum.GetValues(typeof(MapSize)).Cast<MapSize>().ToArray();
+        private static readonly TileMapSize[] sizes = Enum.GetValues(typeof(TileMapSize)).Cast<TileMapSize>().ToArray();
         private static int selectedSize;
         private static uint Seed = 1032u;
         private static ITileMap dungeon;
@@ -22,19 +26,23 @@ namespace Demo
         private static readonly Display display = new Display();
         private static readonly Dictionary<string, Action> _inputMap = new Dictionary<string, Action>
         {
+            {"size", PrintSize },
             {"inc", IncreaseSize},
             {"dec", DecreaseSize},
             {"seed", ChangeSeed},
             {"quit", Quit},
+            {"exit", Quit},
             {"gen", Generate},
             {"exp", Export},
             {"render", Render1},
+            {"render2", Render2},
             {"help", ShowHelp },
             {"clear", Clear },
         };
 
         public static void Main()
         {
+            PixelTemplate.LoadPixelTemplates();
             running = true;
 
             while (running)
@@ -59,8 +67,8 @@ namespace Demo
             gp.RoomChance = 1f;
             gp.Seed = Seed;
             gp.MobsInRoomsOnly = true;
-            dungeon = Generator.Generate(size, gp);
-            cells = Generator.cbg._cells;
+            dungeon = CellBasedGeneratorCaller.Generate((int)size, gp);
+            cells = CellBasedGeneratorCaller.cbg._cells;
         }
 
         private static void Quit()
@@ -70,20 +78,29 @@ namespace Demo
 
         static void ChangeSeed()
         {
-            uint seedValue;
-            if (display.PromptForInt("Enter a positive integer for the new seed or press \'q\' to cancel.", out seedValue))
+            Console.WriteLine("old seed: {0}", Seed);
+            Console.Write("new seed: ");
+            if (uint.TryParse(Console.ReadLine(), out var seedValue))
+            {
                 Seed = seedValue;
+            }
+        }
+
+        static void PrintSize()
+        {
+            Console.WriteLine("{0}: {1}", sizes[selectedSize], (int)sizes[selectedSize]);
         }
 
         static void IncreaseSize()
         {
-            selectedSize = (selectedSize + 1) % sizes.Length;
+            selectedSize = selectedSize == sizes.Length - 1 ? selectedSize : selectedSize + 1;
+            PrintSize();
         }
 
         static void DecreaseSize()
         {
-            selectedSize--;
-            selectedSize = selectedSize < 0 ? sizes.Length - 1 : selectedSize;
+            selectedSize = selectedSize == 0 ? selectedSize : selectedSize - 1;
+            PrintSize();
         }
 
         static void Export()
@@ -121,13 +138,72 @@ namespace Demo
 
         static void Render2()
         {
-            List<List<ExportTile>> cells = new List<List<ExportTile>>();
-            for (int y = 0; y < dungeon.Height; y++)
+            int renderWidth = 8 * dungeon.Width;
+            int renderHeight = 8 * dungeon.Height;
+
+            // Creates a new image with empty pixel data. 
+            using (Image<Rgba32> image = new(renderWidth, renderHeight))
             {
-                var roomCells = new List<ExportTile>();
-                for (int x = 0; x < dungeon.Width; x++)
+                for (int y = 0; y < dungeon.Height; y++)
                 {
-                    //row.Add(new Cell(dungeon[x, y]));
+                    for (int x = 0; x < dungeon.Width; x++)
+                    {
+                        var tile = dungeon[x, y];
+                        switch (tile.MaterialType)
+                        {
+                            case MaterialType.Air:
+                                RenderTemplate(image, x, y, PixelTemplate.PixelTemplates["air"]);
+                                break;
+                            case MaterialType.Floor:
+                                RenderTemplate(image, x, y, PixelTemplate.PixelTemplates["floor"]);
+                                if (tile.Attributes.HasFlag(AttributeType.Entry))
+                                {
+                                    RenderTemplate(image, x, y, PixelTemplate.PixelTemplates["entrance"]);
+                                }
+                                else if (tile.Attributes.HasFlag(AttributeType.Exit))
+                                {
+                                    RenderTemplate(image, x, y, PixelTemplate.PixelTemplates["exit"]);
+                                }
+                                else if (tile.Attributes.HasFlag(AttributeType.Loot))
+                                {
+                                    RenderTemplate(image, x, y, PixelTemplate.PixelTemplates["loot"]);
+                                }
+                                else if (tile.Attributes.HasFlag(AttributeType.MobSpawn))
+                                {
+                                    RenderTemplate(image, x, y, PixelTemplate.PixelTemplates["mobspawn"]);
+
+                                }
+                                else if (tile.Attributes.HasFlag(AttributeType.Doors))
+                                {
+                                }
+                                break;
+                            case MaterialType.Wall:
+                                RenderTemplate(image, x, y, PixelTemplate.PixelTemplates["wall"]);
+                                break;
+                            case MaterialType.BreakableWall:
+                                break;
+                        }
+                    }
+                }
+                image.SaveAsPng($"map_{Seed}.png");
+            }
+            Process.Start("explorer.exe", $"map_{Seed}.png");
+
+            void RenderTemplate(Image<Rgba32> image, int x, int y, Image<Rgba32> template)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        if (template[i, j].A != 0)
+                        {
+                            image[x * 8 + i, y * 8 + j] = template[i, j];
+                        }
+                        else
+                        {
+                            image[x * 8 + i, y * 8 + j] = template[i, j];
+                        }
+                    }
                 }
             }
         }
