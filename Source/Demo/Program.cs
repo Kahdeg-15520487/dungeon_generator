@@ -21,7 +21,7 @@ namespace Demo
         private static ITileMap dungeon;
         private static Cell[,] cells;
         private static bool running;
-
+        private static GeneratorParams gp = GeneratorParams.Default;
         private static readonly Display display = new Display();
         private static readonly Dictionary<string, Action> _inputMap = new Dictionary<string, Action>
         {
@@ -29,20 +29,27 @@ namespace Demo
             {"inc", IncreaseSize},
             {"dec", DecreaseSize},
             {"seed", ChangeSeed},
+            {"rseed", RandomSeed },
             {"quit", Quit},
             {"exit", Quit},
             {"gen", Generate},
             {"exp", Export},
-            {"render", Render1},
-            {"render2", Render2},
+            //{"render", Render1},
+            {"render", Render2},
             {"help", ShowHelp },
             {"clear", Clear },
+            {"rc", SetRoomChance },
+            {"lc", SetLootChance },
         };
 
         public static void Main()
         {
             PixelTemplate.LoadPixelTemplates();
             running = true;
+            if (File.Exists("generatorparam.json"))
+            {
+                gp = JsonConvert.DeserializeObject<GeneratorParams>(File.ReadAllText("generatorparam.json"));
+            }
 
             while (running)
             {
@@ -59,11 +66,31 @@ namespace Demo
             }
         }
 
+        private static void SetRoomChance()
+        {
+            Console.WriteLine("old room chance: {0}", gp.RoomChance);
+            Console.Write("new room chance: ");
+            if (float.TryParse(Console.ReadLine(), out var roomChance) && roomChance >= 0f && roomChance <= 1f)
+            {
+                gp.RoomChance = roomChance;
+            }
+            SaveGeneratorParams();
+        }
+
+        private static void SetLootChance()
+        {
+            Console.WriteLine("old loot chance: {0}", gp.LootChance);
+            Console.Write("new loot chance: ");
+            if (float.TryParse(Console.ReadLine(), out var LootChance) && LootChance >= 0f && LootChance <= 1f)
+            {
+                gp.LootChance = LootChance;
+            }
+            SaveGeneratorParams();
+        }
+
         private static void Generate()
         {
             var size = sizes[selectedSize];
-            GeneratorParams gp = GeneratorParams.Default;
-            gp.RoomChance = 0.8f;
             gp.Seed = Seed;
             gp.MobsInRoomsOnly = true;
             dungeon = CellBasedGeneratorCaller.Generate((int)size, gp);
@@ -73,6 +100,20 @@ namespace Demo
         private static void Quit()
         {
             running = false;
+            SaveGeneratorParams();
+        }
+
+        private static void SaveGeneratorParams()
+        {
+            File.WriteAllText("generatorparam.json", JsonConvert.SerializeObject(gp, Formatting.Indented));
+        }
+
+        static void RandomSeed()
+        {
+            Console.WriteLine("old seed: {0}", Seed);
+            Seed = (uint)new Random().Next();
+            Console.WriteLine("new seed: {0}", Seed);
+            SaveGeneratorParams();
         }
 
         static void ChangeSeed()
@@ -83,6 +124,7 @@ namespace Demo
             {
                 Seed = seedValue;
             }
+            SaveGeneratorParams();
         }
 
         static void PrintSize()
@@ -184,9 +226,9 @@ namespace Demo
                         }
                     }
                 }
-                image.SaveAsPng($"map_{Seed}.png");
+                image.SaveAsPng($"map_{Seed}_{sizes[selectedSize]}.png");
             }
-            Process.Start("explorer.exe", $"map_{Seed}.png");
+            Process.Start("explorer.exe", $"map_{Seed}_{sizes[selectedSize]}.png");
 
             void RenderTemplate(Image<Rgba32> image, int x, int y, Image<Rgba32> template)
             {

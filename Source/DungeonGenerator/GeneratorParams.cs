@@ -28,7 +28,7 @@ namespace Dungeon.Generator
         /// <summary>
         /// Gets or sets the percentage of Loot rooms to create. Values are 0 - 1.0f
         /// </summary>
-        public float Loot { get; set; }
+        public float LootChance { get; set; }
 
         /// <summary>
         /// Gets or sets if Mobs should only be placed in rooms. 
@@ -51,11 +51,10 @@ namespace Dungeon.Generator
                     Seed = 1024,
                     Doors = 1.0f,
                     Exits = true,
-                    Loot = .25f,
+                    LootChance = .25f,
                     MobSpawns = .66f,
                     RoomChance = .66f,
                     MobsInRoomsOnly = false,
-
                 };
             }
         }

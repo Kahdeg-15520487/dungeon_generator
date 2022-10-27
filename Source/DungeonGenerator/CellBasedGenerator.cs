@@ -136,7 +136,7 @@ namespace Dungeon.Generator
             if (_random.Chance(_params.MobSpawns) && (!_params.MobsInRoomsOnly || newCell.Type == CellType.Room))
                 newCell.Attributes |= AttributeType.MobSpawn;
 
-            if (_random.Chance(_params.Loot) && newCell.Type == CellType.Room)
+            if (_random.Chance(_params.LootChance) && newCell.Type == CellType.Room)
                 newCell.Attributes |= AttributeType.Loot;
 
             if (_random.Chance(_params.Doors))
