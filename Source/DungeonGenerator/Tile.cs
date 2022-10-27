@@ -6,19 +6,16 @@ namespace Dungeon.Generator
     /// <summary>
     /// A representation of a tile
     /// </summary>
-    [StructLayout(LayoutKind.Explicit)]
     public struct Tile
     {
         /// <summary>
         /// The material type of this tile
         /// </summary>
-        [FieldOffset(0)]
         public MaterialType MaterialType;
 
         /// <summary>
         /// The meta data info about this tile
         /// </summary>
-        [FieldOffset(1)]
         public AttributeType Attributes;
 
         /// <summary>

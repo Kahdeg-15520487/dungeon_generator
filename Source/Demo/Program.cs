@@ -138,8 +138,8 @@ namespace Demo
 
         static void Render2()
         {
-            int renderWidth = 8 * dungeon.Width;
-            int renderHeight = 8 * dungeon.Height;
+            int renderWidth = 16 * dungeon.Width;
+            int renderHeight = 16 * dungeon.Height;
 
             // Creates a new image with empty pixel data. 
             using (Image<Rgba32> image = new(renderWidth, renderHeight))
@@ -191,17 +191,17 @@ namespace Demo
 
             void RenderTemplate(Image<Rgba32> image, int x, int y, Image<Rgba32> template)
             {
-                for (int j = 0; j < 8; j++)
+                for (int j = 0; j < 16; j++)
                 {
-                    for (int i = 0; i < 8; i++)
+                    for (int i = 0; i < 16; i++)
                     {
                         if (template[i, j].A != 0)
                         {
-                            image[x * 8 + i, y * 8 + j] = template[i, j];
+                            image[x * 16 + i, y * 16 + j] = template[i, j];
                         }
                         else
                         {
-                            image[x * 8 + i, y * 8 + j] = template[i, j];
+                            image[x * 16 + i, y * 16 + j] = template[i, j];
                         }
                     }
                 }
